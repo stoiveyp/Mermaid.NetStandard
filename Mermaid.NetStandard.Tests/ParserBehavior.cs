@@ -6,14 +6,14 @@ namespace Mermaid.NetStandard.Tests
         public async Task ThrowOnEmptyStream()
         {
             var exc = await Assert.ThrowsAsync<InvalidOperationException>(() => MermaidParser.Parse(string.Empty));
-            Assert.Equal(exc.Message, "No diagram found");
+            Assert.Equal("No diagram found", exc.Message);
         }
 
         [Fact]
         public async Task ThrowOnUnsupportedDiagram()
         {
             var exc = await Assert.ThrowsAsync<InvalidOperationException>(() => MermaidParser.Parse("test"));
-            Assert.Equal(exc.Message, "Diagram type test not supported");
+            Assert.Equal("Diagram type test not supported", exc.Message);
         }
 
         [Fact]
