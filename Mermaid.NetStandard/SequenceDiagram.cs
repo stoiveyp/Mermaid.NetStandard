@@ -9,5 +9,6 @@ namespace Mermaid.NetStandard
         public const string MermaidType = "sequenceDiagram";
         public override string Type => MermaidType;
         public bool AutoNumber { get; set; }
+        public Dictionary<string, string> Participants { get; set; } = new();
     }
 }

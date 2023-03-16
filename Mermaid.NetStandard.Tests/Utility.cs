@@ -8,9 +8,19 @@ namespace Mermaid.NetStandard.Tests
 {
     internal static class Utility
     {
-        public static TextReader ToReader(this string text)
+        public static async Task<T> IsDiagramType<T>(this string src) where T:MermaidDiagram
         {
-            return new StringReader(text);
+            return Assert.IsType<T>(await MermaidParser.Parse(src));
+        }
+
+        public static Task<InvalidDiagramException> IsInvalidDiagram(this string src)
+        {
+            return Assert.ThrowsAsync<InvalidDiagramException>(() => MermaidParser.Parse(src));
+        }
+
+        public static Task<T> IsInvalidDiagram<T>(this string src) where T:Exception
+        {
+            return Assert.ThrowsAsync<T>(() => MermaidParser.Parse(src));
         }
     }
 }

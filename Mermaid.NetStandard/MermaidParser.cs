@@ -12,6 +12,8 @@ namespace Mermaid.NetStandard
         public string CurrentLine { get; set; }
         public TextReader Reader { get; }
         public int LineNumber { get; private set; }
+        public int CurrentPosition { get; private set; }
+        public char Current => CurrentLine[CurrentPosition];
 
         private MermaidParser(TextReader reader)
         {
@@ -38,6 +40,7 @@ namespace Mermaid.NetStandard
             {
                 LineNumber++;
                 CurrentLine = line;
+                CurrentPosition = 0;
                 return true;
             }
 
@@ -65,6 +68,17 @@ namespace Mermaid.NetStandard
             }
 
             return await DiagramTypes[parser.CurrentLine](parser);
+        }
+
+        public bool Next()
+        {
+            CurrentPosition++;
+            if (CurrentPosition >= CurrentLine.Length)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

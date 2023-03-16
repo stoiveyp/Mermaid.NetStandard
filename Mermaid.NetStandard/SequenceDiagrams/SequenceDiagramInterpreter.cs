@@ -14,15 +14,17 @@ public class SequenceDiagramInterpreter
         return sequenceContext.Diagram;
     }
 
-    private static int GetActorPos(SequenceContext context)
+    private static int NextWord(SequenceContext context)
     {
-        for (var p = 0; p <= context.Parser.CurrentLine.Length - 1; p++)
+        while (char.IsLetterOrDigit(context.Parser.Current))
         {
-            if (char.IsLetterOrDigit(context.Parser.CurrentLine[p])) continue;
-            return p;
+            if (!context.Parser.Next())
+            {
+                break;
+            }
         }
 
-        return context.Parser.CurrentLine.Length;
+        return context.Parser.CurrentPosition;
     }
 
     private static async Task Interpret(SequenceContext context)
@@ -32,7 +34,7 @@ public class SequenceDiagramInterpreter
             return;
         }
 
-        var actorPos = GetActorPos(context);
+        var actorPos = NextWord(context);
         if (actorPos == 0)
         {
             throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
@@ -42,6 +44,29 @@ public class SequenceDiagramInterpreter
         if (actor.Equals("autonumber", StringComparison.InvariantCultureIgnoreCase))
         {
             context.Diagram.AutoNumber = true;
+        }
+
+        if (actor.Equals("participant", StringComparison.InvariantCultureIgnoreCase))
+        {
+            ParseParticipant(context);
+        }
+    }
+
+    private static void ParseParticipant(SequenceContext context)
+    {
+        if (context.Parser.Current != ' ')
+        {
+            throw new InvalidDiagramException("Name expected after 'participant'", context.Parser.LineNumber);
+        }
+
+        context.Parser.Next();
+        var currentPos = context.Parser.CurrentPosition;
+        NextWord(context);
+
+        if (context.Parser.CurrentPosition > currentPos)
+        {
+            var name = context.Parser.CurrentLine[currentPos..(context.Parser.CurrentPosition)];
+            context.Diagram.Participants.Add(name,name);
         }
     }
 }

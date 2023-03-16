@@ -11,8 +11,7 @@ namespace Mermaid.NetStandard.Tests
         [Fact]
         public async Task DiagramSupported()
         {
-            var diagram = await MermaidParser.Parse("sequenceDiagram");
-            Assert.IsType<SequenceDiagram>(diagram);
+            await "sequenceDiagram".IsDiagramType<SequenceDiagram>();
         }
 
         [Fact]
@@ -23,9 +22,8 @@ namespace Mermaid.NetStandard.Tests
 sequenceDiagram
 autoNumber   
 ";
-            var diagram = await MermaidParser.Parse(src);
-            var seq = Assert.IsType<SequenceDiagram>(diagram);
-            Assert.True(seq.AutoNumber);
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            Assert.True(diagram.AutoNumber);
         }
 
         [Fact]
@@ -34,8 +32,28 @@ autoNumber
             var src = @"
 sequenceDiagram
 -->";
-            var diagram = await Assert.ThrowsAsync<InvalidDiagramException>(() => MermaidParser.Parse(src));
+            var diagram = await src.IsInvalidDiagram();
             Assert.Equal(3,diagram.LineNumber);
+        }
+
+        [Fact]
+        public async Task ExplicitParticipantRequiresSpace()
+        {
+            var src = @"sequenceDiagram
+participant-BC";
+            var exc = await src.IsInvalidDiagram();
+            Assert.Equal("Name expected after 'participant'",exc.Message);
+            Assert.Equal(2,exc.LineNumber);
+        }
+
+        [Fact]
+        public async Task AddsExplicitParticipant()
+        {
+            var src = @"sequenceDiagram
+participant BC";
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            var participant = diagram.Participants.Single();
+            Assert.Equal("BC", participant.Key);
         }
     }
 }

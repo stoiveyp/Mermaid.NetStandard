@@ -10,4 +10,5 @@ public class SequenceContext
 
     public SequenceDiagram Diagram { get; set; }
     public MermaidParser Parser { get; set; }
+    public string CurrentActor { get; set; }
 }
