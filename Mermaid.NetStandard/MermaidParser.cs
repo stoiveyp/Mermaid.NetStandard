@@ -14,6 +14,8 @@ namespace Mermaid.NetStandard
         public int LineNumber { get; private set; }
         public int CurrentPosition { get; private set; }
         public char Current => CurrentLine[CurrentPosition];
+        public char? Peek() => EndOfLine ? null : CurrentLine[CurrentPosition + 1];
+        public bool EndOfLine => CurrentPosition >= CurrentLine.Length-1;
 
         private MermaidParser(TextReader reader)
         {
@@ -47,6 +49,51 @@ namespace Mermaid.NetStandard
             return false;
         }
 
+        public Range? NextWord()
+        {
+            int EndRange() => EndOfLine ? CurrentPosition + 1 : CurrentPosition;
+            while (!EndOfLine && Peek().HasValue)
+            {
+                if (char.IsWhiteSpace(Current))
+                {
+                    Next();
+                    continue;
+                }
+
+                break;
+            }
+
+            var currentPosition = CurrentPosition;
+            while (!EndOfLine && Peek().HasValue)
+            {
+                if (char.IsLetterOrDigit(Current))
+                {
+                    Next();
+                    continue;
+                }
+
+                break;
+            }
+
+            if (currentPosition == CurrentPosition)
+            {
+                return null;
+            }
+
+            return new Range(Index.FromStart(currentPosition), Index.FromStart(EndRange()));
+        }
+
+        public bool Next()
+        {
+            if (EndOfLine)
+            {
+                return false;
+            }
+
+            CurrentPosition++;
+            return true;
+        }
+
         public static Dictionary<string, Func<MermaidParser, Task<SequenceDiagram>>> DiagramTypes = new()
         {
             { SequenceDiagram.MermaidType, SequenceDiagramInterpreter.Interpret}
@@ -68,17 +115,6 @@ namespace Mermaid.NetStandard
             }
 
             return await DiagramTypes[parser.CurrentLine](parser);
-        }
-
-        public bool Next()
-        {
-            CurrentPosition++;
-            if (CurrentPosition >= CurrentLine.Length)
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }

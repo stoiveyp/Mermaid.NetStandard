@@ -14,19 +14,6 @@ public class SequenceDiagramInterpreter
         return sequenceContext.Diagram;
     }
 
-    private static int NextWord(SequenceContext context)
-    {
-        while (char.IsLetterOrDigit(context.Parser.Current))
-        {
-            if (!context.Parser.Next())
-            {
-                break;
-            }
-        }
-
-        return context.Parser.CurrentPosition;
-    }
-
     private static async Task Interpret(SequenceContext context)
     {
         if (!await context.Parser.NextInterpeterLine())
@@ -34,12 +21,12 @@ public class SequenceDiagramInterpreter
             return;
         }
 
-        var actorPos = NextWord(context);
-        if (actorPos == 0)
+        var actorPosR = context.Parser.NextWord();
+        if (!actorPosR.HasValue)
         {
             throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
         }
-        var actor = context.Parser.CurrentLine[..actorPos];
+        var actor = context.Parser.CurrentLine[actorPosR.Value];
 
         if (actor.Equals("autonumber", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -54,19 +41,13 @@ public class SequenceDiagramInterpreter
 
     private static void ParseParticipant(SequenceContext context)
     {
-        if (context.Parser.Current != ' ')
+        var participantNext = context.Parser.NextWord();
+        if (!participantNext.HasValue)
         {
             throw new InvalidDiagramException("Name expected after 'participant'", context.Parser.LineNumber);
         }
 
-        context.Parser.Next();
-        var currentPos = context.Parser.CurrentPosition;
-        NextWord(context);
-
-        if (context.Parser.CurrentPosition > currentPos)
-        {
-            var name = context.Parser.CurrentLine[currentPos..(context.Parser.CurrentPosition)];
-            context.Diagram.Participants.Add(name,name);
-        }
+        var name = context.Parser.CurrentLine[participantNext.Value];
+        context.Diagram.Participants.Add(name, name);
     }
 }

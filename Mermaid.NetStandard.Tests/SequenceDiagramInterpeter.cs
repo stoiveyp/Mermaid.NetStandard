@@ -31,6 +31,7 @@ autoNumber
         {
             var src = @"
 sequenceDiagram
+participant
 -->";
             var diagram = await src.IsInvalidDiagram();
             Assert.Equal(3,diagram.LineNumber);
@@ -54,6 +55,18 @@ participant BC";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
             var participant = diagram.Participants.Single();
             Assert.Equal("BC", participant.Key);
+            Assert.Equal("BC", participant.Value);
+        }
+
+        [Fact]
+        public async Task AddsExplicitParticipantAlias()
+        {
+            var src = @"sequenceDiagram
+participant BC as Background";
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            var participant = diagram.Participants.Single();
+            Assert.Equal("BC", participant.Key);
+            Assert.Equal("Background", participant.Value);
         }
     }
 }
