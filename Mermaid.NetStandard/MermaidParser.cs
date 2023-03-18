@@ -15,7 +15,7 @@ namespace Mermaid.NetStandard
         public int CurrentPosition { get; private set; }
         public char Current => CurrentLine[CurrentPosition];
         public char? Peek() => EndOfLine ? null : CurrentLine[CurrentPosition + 1];
-        public bool EndOfLine => CurrentPosition >= CurrentLine.Length-1;
+        public bool EndOfLine => CurrentPosition >= CurrentLine.Length - 1;
 
         private MermaidParser(TextReader reader)
         {
@@ -49,30 +49,33 @@ namespace Mermaid.NetStandard
             return false;
         }
 
-        public Range? NextWord()
+        public string NextWord()
         {
-            int EndRange() => EndOfLine ? CurrentPosition + 1 : CurrentPosition;
-            while (!EndOfLine && Peek().HasValue)
-            {
-                if (char.IsWhiteSpace(Current))
-                {
-                    Next();
-                    continue;
-                }
+            if (EndOfLine) return null;
 
-                break;
+            while (!EndOfLine && char.IsWhiteSpace(Current))
+            {
+                Next();
             }
 
-            var currentPosition = CurrentPosition;
-            while (!EndOfLine && Peek().HasValue)
-            {
-                if (char.IsLetterOrDigit(Current))
-                {
-                    Next();
-                    continue;
-                }
+            //BC AS 
 
-                break;
+            if (EndOfLine) return null;
+
+            var currentPosition = CurrentPosition;
+            var broken = false;
+            while (Next())
+            {
+                if (!char.IsLetterOrDigit(Current))
+                {
+                    broken = true;
+                    break;
+                }
+            }
+
+            if (!broken)
+            {
+                CurrentPosition++;
             }
 
             if (currentPosition == CurrentPosition)
@@ -80,7 +83,7 @@ namespace Mermaid.NetStandard
                 return null;
             }
 
-            return new Range(Index.FromStart(currentPosition), Index.FromStart(EndRange()));
+            return CurrentLine[currentPosition..CurrentPosition];
         }
 
         public bool Next()

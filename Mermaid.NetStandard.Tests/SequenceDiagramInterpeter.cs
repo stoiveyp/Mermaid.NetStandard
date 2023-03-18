@@ -42,9 +42,8 @@ participant
         {
             var src = @"sequenceDiagram
 participant-BC";
-            var exc = await src.IsInvalidDiagram();
-            Assert.Equal("Name expected after 'participant'",exc.Message);
-            Assert.Equal(2,exc.LineNumber);
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal("participant",Assert.Single(diagram.Participants).Key);
         }
 
         [Fact]
@@ -56,6 +55,22 @@ participant BC";
             var participant = diagram.Participants.Single();
             Assert.Equal("BC", participant.Key);
             Assert.Equal("BC", participant.Value);
+        }
+
+        [Fact]
+        public async Task NoAsAfterParticipantName()
+        {
+            var src = @"sequenceDiagram
+participant BC alias";
+            await src.IsInvalidDiagram<InvalidDiagramException>("Expected 'as' after participant id");
+        }
+
+        [Fact]
+        public async Task NoAliasAfterAsParticipantAs()
+        {
+            var src = @"sequenceDiagram
+participant BC as ";
+            await src.IsInvalidDiagram<InvalidDiagramException>("Expected alias after 'as'");
         }
 
         [Fact]

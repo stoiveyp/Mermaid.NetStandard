@@ -22,5 +22,11 @@ namespace Mermaid.NetStandard.Tests
         {
             return Assert.ThrowsAsync<T>(() => MermaidParser.Parse(src));
         }
+
+        public static async Task IsInvalidDiagram<T>(this string src, string message) where T : Exception
+        {
+            var exc = await Assert.ThrowsAsync<T>(() => MermaidParser.Parse(src));
+            Assert.Equal(message, exc.Message);
+        }
     }
 }
