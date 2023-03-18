@@ -83,5 +83,15 @@ participant BC as Background";
             Assert.Equal("BC", participant.Key);
             Assert.Equal("Background", participant.Value);
         }
+
+        [Fact]
+        public async Task ParseSyncMessage()
+        {
+            var src = @"sequenceDiagram
+A->B";
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal(2, diagram.Participants.Count);
+            Assert.Single(diagram.Messages);
+        }
     }
 }
