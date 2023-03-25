@@ -22,59 +22,65 @@ public class SequenceDiagramInterpreter
         { "participant", ParseParticipant }
     };
 
-private static async Task Interpret(SequenceContext context)
-{
-    if (!await context.Parser.NextInterpeterLine())
+    private static async Task Interpret(SequenceContext context)
     {
-        return;
+        if (!await context.Parser.NextInterpeterLine())
+        {
+            return;
+        }
+
+        while (!context.Parser.EndOfLine)
+        {
+            var commandOrActor = context.Parser.NextWord();
+            if (commandOrActor == null)
+            {
+                throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
+            }
+
+            if (commands.ContainsKey(commandOrActor))
+            {
+                if (commands[commandOrActor](context)) return;
+            }
+
+            context.Diagram.Participants.Add(commandOrActor, commandOrActor);
+            context.CurrentActor = commandOrActor;
+
+            return;
+        }
     }
 
-    var actor = context.Parser.NextWord();
-    if (actor == null)
+    private static bool ParseParticipant(SequenceContext context)
     {
-        throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
-    }
+        if (context.Parser.EndOfLine)
+        {
+            return false;
+        }
 
-    if (commands.ContainsKey(actor))
-    {
-        if (commands[actor](context)) return;
-    }
+        var participantNext = context.Parser.NextWord();
+        if (participantNext == null)
+        {
+            return false;
+        }
 
-    context.Diagram.Participants.Add(actor, actor);
-}
+        if (context.Parser.EndOfLine)
+        {
+            context.Diagram.Participants.Add(participantNext, participantNext);
+            return true;
+        }
 
-private static bool ParseParticipant(SequenceContext context)
-{
-    if (!context.Parser.EndOfLine && context.Parser.Current != ' ')
-    {
-        return false;
-    }
+        var asWord = context.Parser.NextWord();
+        if (asWord != "as")
+        {
+            throw new InvalidDiagramException("Expected 'as' after participant id", context.Parser.LineNumber);
+        }
 
-    var participantNext = context.Parser.NextWord();
-    if (participantNext == null)
-    {
-        throw new InvalidDiagramException("Name expected after 'participant'", context.Parser.LineNumber);
-    }
+        var alias = context.Parser.NextWord();
+        if (alias == null)
+        {
+            throw new InvalidDiagramException("Expected alias after 'as'", context.Parser.LineNumber);
+        }
 
-    if (context.Parser.EndOfLine)
-    {
-        context.Diagram.Participants.Add(participantNext, participantNext);
+        context.Diagram.Participants.Add(participantNext, alias);
         return true;
     }
-
-    var asWord = context.Parser.NextWord();
-    if (asWord != "as")
-    {
-        throw new InvalidDiagramException("Expected 'as' after participant id", context.Parser.LineNumber);
-    }
-
-    var alias = context.Parser.NextWord();
-    if (alias == null)
-    {
-        throw new InvalidDiagramException("Expected alias after 'as'", context.Parser.LineNumber);
-    }
-
-    context.Diagram.Participants.Add(participantNext, alias);
-    return true;
-}
 }

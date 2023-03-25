@@ -33,8 +33,8 @@ autoNumber
 sequenceDiagram
 participant
 -->";
-            var diagram = await src.IsInvalidDiagram();
-            Assert.Equal(3,diagram.LineNumber);
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal("participant", Assert.Single(diagram.Participants).Key);
         }
 
         [Fact]

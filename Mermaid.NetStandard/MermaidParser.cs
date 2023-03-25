@@ -60,20 +60,27 @@ namespace Mermaid.NetStandard
 
             //BC AS 
 
-            if (EndOfLine) return null;
+            if (EndOfLine || !char.IsLetterOrDigit(Current)) return null;
 
             var currentPosition = CurrentPosition;
             var broken = false;
-            while (Next())
+
+            while (Peek().HasValue)
             {
+                Next();
+                broken = true;
                 if (!char.IsLetterOrDigit(Current))
                 {
-                    broken = true;
                     break;
                 }
             }
 
             if (!broken)
+            {
+                Next();
+            }
+
+            if (EndOfLine && !char.IsWhiteSpace(Current))
             {
                 CurrentPosition++;
             }
