@@ -6,5 +6,7 @@ namespace Mermaid.NetStandard.SequenceDiagrams
 {
     public class Message
     {
+        public string Originator { get; set; }
+        public string Recipient { get; set; }
     }
 }

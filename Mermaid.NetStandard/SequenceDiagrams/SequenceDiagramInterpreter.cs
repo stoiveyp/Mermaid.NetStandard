@@ -29,8 +29,6 @@ public class SequenceDiagramInterpreter
             return;
         }
 
-        while (!context.Parser.EndOfLine)
-        {
             var commandOrActor = context.Parser.NextWord();
             if (commandOrActor == null)
             {
@@ -42,11 +40,61 @@ public class SequenceDiagramInterpreter
                 if (commands[commandOrActor](context)) return;
             }
 
-            context.Diagram.Participants.Add(commandOrActor, commandOrActor);
+            if (!context.Diagram.Participants.ContainsKey(commandOrActor))
+            {
+                context.Diagram.Participants.Add(commandOrActor, commandOrActor);
+            }
+
             context.CurrentActor = commandOrActor;
 
-            return;
+            if (context.Parser.EndOfLine)
+            {
+                return;
+            }
+
+            var message = ParseMessage(context);
+            if (message == null)
+            {
+                throw new InvalidDiagramException("Unknown message type", context.Parser.LineNumber);
+            }
+
+            var recipient = context.Parser.NextWord();
+            if (recipient == null)
+            {
+                return;
+            }
+
+            if (!context.Diagram.Participants.ContainsKey(recipient))
+            {
+                context.Diagram.Participants.Add(recipient, recipient);
+            }
+
+            message.Recipient = recipient;
+    }
+
+    private static Message ParseMessage(SequenceContext context)
+    {
+        if (context.Parser.Current != '-')
+        {
+            return null;
         }
+
+        context.Parser.Next();
+
+        if (context.Parser.Current != '>')
+        {
+            return null;
+        }
+
+        context.Parser.Next();
+
+        var msg = new Message
+        {
+            Originator = context.CurrentActor
+        };
+
+        context.Diagram.Messages.Add(msg);
+        return msg;
     }
 
     private static bool ParseParticipant(SequenceContext context)

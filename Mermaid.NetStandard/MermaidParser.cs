@@ -51,7 +51,10 @@ namespace Mermaid.NetStandard
 
         public string NextWord()
         {
-            if (EndOfLine) return null;
+            if (EndOfLine)
+            {
+                return char.IsLetterOrDigit(Current) ? Current.ToString() : null;
+            }
 
             while (!EndOfLine && char.IsWhiteSpace(Current))
             {

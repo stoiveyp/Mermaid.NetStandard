@@ -41,9 +41,9 @@ participant
         public async Task ExplicitParticipantRequiresSpace()
         {
             var src = @"sequenceDiagram
-participant-BC";
+participant->BC";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
-            Assert.Equal("participant",Assert.Single(diagram.Participants).Key);
+            Assert.Equal("participant",diagram.Participants.First().Key);
         }
 
         [Fact]
