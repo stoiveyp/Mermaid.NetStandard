@@ -85,26 +85,19 @@ participant BC as Background";
             Assert.Equal("Background", participant.Value);
         }
 
-        [Fact]
-        public async Task ParseNoArrowMessage()
+        [Theory]
+        [InlineData("A->B", "A", ArrowEnding.None, ArrowLine.Solid, "B")]
+        [InlineData("AC->>BD", "AC", ArrowEnding.Arrowhead, ArrowLine.Solid, "BD")]
+        [InlineData("AC-XBD", "AC", ArrowEnding.Cross, ArrowLine.Solid, "BD")]
+        public async Task ParseMessage(string message, string originator, ArrowEnding ending, ArrowLine line,
+            string recipient)
         {
-            var src = @"sequenceDiagram
-A->B";
+            var src = @$"sequenceDiagram
+{message}";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
             Assert.Equal(2, diagram.Participants.Count);
             var msg = Assert.Single(diagram.Messages);
-            AssertMessage(msg, "A", ArrowEnding.None, ArrowLine.Solid, "B");
-        }
-
-        [Fact]
-        public async Task ParseArrowheadMessage()
-        {
-            var src = @"sequenceDiagram
-A->>BD";
-            var diagram = await src.IsDiagramType<SequenceDiagram>();
-            Assert.Equal(2, diagram.Participants.Count);
-            var msg = Assert.Single(diagram.Messages);
-            AssertMessage(msg, "A",ArrowEnding.Arrowhead, ArrowLine.Solid,"BD");
+            AssertMessage(msg, originator, ending, line, recipient);
         }
 
         private void AssertMessage(Message msg, string originator, ArrowEnding ending, ArrowLine line, string recipient)
