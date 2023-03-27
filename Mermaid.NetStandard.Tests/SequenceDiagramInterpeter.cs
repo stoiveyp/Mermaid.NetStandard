@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Mermaid.NetStandard.SequenceDiagrams;
 
 namespace Mermaid.NetStandard.Tests
 {
@@ -85,13 +86,33 @@ participant BC as Background";
         }
 
         [Fact]
-        public async Task ParseSyncMessage()
+        public async Task ParseNoArrowMessage()
         {
             var src = @"sequenceDiagram
 A->B";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
             Assert.Equal(2, diagram.Participants.Count);
-            Assert.Single(diagram.Messages);
+            var msg = Assert.Single(diagram.Messages);
+            AssertMessage(msg, "A", ArrowEnding.None, ArrowLine.Solid, "B");
+        }
+
+        [Fact]
+        public async Task ParseArrowheadMessage()
+        {
+            var src = @"sequenceDiagram
+A->>BD";
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal(2, diagram.Participants.Count);
+            var msg = Assert.Single(diagram.Messages);
+            AssertMessage(msg, "A",ArrowEnding.Arrowhead, ArrowLine.Solid,"BD");
+        }
+
+        private void AssertMessage(Message msg, string originator, ArrowEnding ending, ArrowLine line, string recipient)
+        {
+            Assert.Equal(ending, msg.Ending);
+            Assert.Equal(line, msg.Line);
+            Assert.Equal(originator, msg.Originator);
+            Assert.Equal(recipient, msg.Recipient);
         }
     }
 }

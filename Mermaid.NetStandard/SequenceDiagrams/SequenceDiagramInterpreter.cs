@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Mermaid.NetStandard.SequenceDiagrams;
 
@@ -72,6 +74,38 @@ public class SequenceDiagramInterpreter
             message.Recipient = recipient;
     }
 
+    private static Dictionary<char, ArrowEnding> Endings = new()
+    {
+        { '>', SequenceDiagrams.ArrowEnding.None },
+        { 'X', SequenceDiagrams.ArrowEnding.Cross },
+        { ')', SequenceDiagrams.ArrowEnding.Open }
+    };
+
+    private static bool ArrowEnding(SequenceContext context, Message msg)
+    {
+        var peek = context.Parser.Peek();
+        
+        if (peek.HasValue && Endings.ContainsKey(peek.Value))
+        {
+            context.Parser.Next();
+            msg.Ending = Endings[context.Parser.Current];
+        }
+        else
+        {
+            return false;
+        }
+
+        var secondPeek = context.Parser.Peek();
+        if (msg.Ending == SequenceDiagrams.ArrowEnding.None && secondPeek.HasValue &&
+            secondPeek.Value == '>')
+        {
+            context.Parser.Next();
+            msg.Ending = SequenceDiagrams.ArrowEnding.Arrowhead;
+        }
+
+        return true;
+    }
+
     private static Message ParseMessage(SequenceContext context)
     {
         if (context.Parser.Current != '-')
@@ -79,19 +113,17 @@ public class SequenceDiagramInterpreter
             return null;
         }
 
-        context.Parser.Next();
+        var msg = new Message
+        {
+            Originator = context.CurrentActor
+        };
 
-        if (context.Parser.Current != '>')
+        if (!ArrowEnding(context, msg))
         {
             return null;
         }
 
         context.Parser.Next();
-
-        var msg = new Message
-        {
-            Originator = context.CurrentActor
-        };
 
         context.Diagram.Messages.Add(msg);
         return msg;

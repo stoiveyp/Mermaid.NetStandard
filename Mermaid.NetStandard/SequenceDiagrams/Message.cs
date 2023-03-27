@@ -8,5 +8,7 @@ namespace Mermaid.NetStandard.SequenceDiagrams
     {
         public string Originator { get; set; }
         public string Recipient { get; set; }
+        public ArrowEnding Ending { get; set; }
+        public ArrowLine Line { get; set; }
     }
 }
