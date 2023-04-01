@@ -62,6 +62,7 @@ participant->BC";
 
         [Theory]
         [InlineData("A->B", "A", ArrowEnding.None, ArrowLine.Solid, "B")]
+        [InlineData("Thing One->Thing Two", "Thing One", ArrowEnding.None, ArrowLine.Solid, "Thing Two")]
         [InlineData("AC->>BD", "AC", ArrowEnding.Arrowhead, ArrowLine.Solid, "BD")]
         [InlineData("AC-XBD", "AC", ArrowEnding.Cross, ArrowLine.Solid, "BD")]
         [InlineData("AC--XBD", "AC", ArrowEnding.Cross, ArrowLine.Dotted, "BD")]
