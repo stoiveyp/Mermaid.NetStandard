@@ -39,6 +39,27 @@ participant
         }
 
         [Fact]
+        public async Task ParticipantsMustBeAtLeastOneWord()
+        {
+            var src = @"sequenceDiagram
+participant as as as";
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            var pc = Assert.Single(diagram.Participants);
+            Assert.Equal("as", pc.Key);
+        }
+
+        [Fact]
+        public async Task ExplicitParticipantsCanBeMoreThanOneWord()
+        {
+            var src = @"sequenceDiagram
+participant as as as as";
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            var pc = Assert.Single(diagram.Participants);
+            Assert.Equal("as", pc.Key);
+            Assert.Equal("as as", pc.Value);
+        }
+
+        [Fact]
         public async Task ExplicitParticipantRequiresSpace()
         {
             var src = @"sequenceDiagram
@@ -63,7 +84,8 @@ participant BC";
         {
             var src = @"sequenceDiagram
 participant BC alias";
-            await src.IsInvalidDiagram<InvalidDiagramException>("Expected 'as' after participant id");
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal("BC alias",diagram.Participants.First().Key);
         }
 
         [Fact]
@@ -71,7 +93,8 @@ participant BC alias";
         {
             var src = @"sequenceDiagram
 participant BC as ";
-            await src.IsInvalidDiagram<InvalidDiagramException>("Expected alias after 'as'");
+            var diagram = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal("BC as", diagram.Participants.First().Key);
         }
 
         [Fact]
@@ -89,6 +112,7 @@ participant BC as Background";
         [InlineData("A->B", "A", ArrowEnding.None, ArrowLine.Solid, "B")]
         [InlineData("AC->>BD", "AC", ArrowEnding.Arrowhead, ArrowLine.Solid, "BD")]
         [InlineData("AC-XBD", "AC", ArrowEnding.Cross, ArrowLine.Solid, "BD")]
+        [InlineData("AC--XBD", "AC", ArrowEnding.Cross, ArrowLine.Dotted, "BD")]
         public async Task ParseMessage(string message, string originator, ArrowEnding ending, ArrowLine line,
             string recipient)
         {

@@ -61,8 +61,6 @@ namespace Mermaid.NetStandard
                 Next();
             }
 
-            //BC AS 
-
             if (EndOfLine || !char.IsLetterOrDigit(Current)) return null;
 
             var currentPosition = CurrentPosition;

@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace Mermaid.NetStandard.SequenceDiagrams;
 
 public class SequenceDiagramInterpreter
 {
+    private static Dictionary<char, ArrowEnding> Endings = new()
+    {
+        { '>', SequenceDiagrams.ArrowEnding.None },
+        { 'X', SequenceDiagrams.ArrowEnding.Cross },
+        { ')', SequenceDiagrams.ArrowEnding.Open }
+    };
+
+    private const char MessageChar = '-';
+
     public static async Task<SequenceDiagram> Interpret(MermaidParser parser)
     {
         var sequenceContext = new SequenceContext(parser);
@@ -31,60 +35,65 @@ public class SequenceDiagramInterpreter
             return;
         }
 
-            var commandOrActor = context.Parser.NextWord();
-            if (commandOrActor == null)
-            {
-                throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
-            }
+        var commandOrActor = context.Parser.NextWord();
+        if (commandOrActor == null)
+        {
+            throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
+        }
 
-            if (commands.ContainsKey(commandOrActor))
-            {
-                if (commands[commandOrActor](context)) return;
-            }
+        if (commands.ContainsKey(commandOrActor))
+        {
+            if (commands[commandOrActor](context)) return;
+        }
 
-            if (!context.Diagram.Participants.ContainsKey(commandOrActor))
-            {
-                context.Diagram.Participants.Add(commandOrActor, commandOrActor);
-            }
+        if (!context.Diagram.Participants.ContainsKey(commandOrActor))
+        {
+            context.Diagram.Participants.Add(commandOrActor, commandOrActor);
+        }
 
-            context.CurrentActor = commandOrActor;
+        context.CurrentActor = commandOrActor;
 
-            if (context.Parser.EndOfLine)
-            {
-                return;
-            }
+        if (context.Parser.EndOfLine)
+        {
+            return;
+        }
 
-            var message = ParseMessage(context);
-            if (message == null)
-            {
-                throw new InvalidDiagramException("Unknown message type", context.Parser.LineNumber);
-            }
+        var message = ParseMessage(context);
+        if (message == null)
+        {
+            throw new InvalidDiagramException("Unknown message type", context.Parser.LineNumber);
+        }
 
-            var recipient = context.Parser.NextWord();
-            if (recipient == null)
-            {
-                return;
-            }
+        var recipient = context.Parser.NextWord();
+        if (recipient == null)
+        {
+            return;
+        }
 
-            if (!context.Diagram.Participants.ContainsKey(recipient))
-            {
-                context.Diagram.Participants.Add(recipient, recipient);
-            }
+        if (!context.Diagram.Participants.ContainsKey(recipient))
+        {
+            context.Diagram.Participants.Add(recipient, recipient);
+        }
 
-            message.Recipient = recipient;
+        message.Recipient = recipient;
     }
-
-    private static Dictionary<char, ArrowEnding> Endings = new()
-    {
-        { '>', SequenceDiagrams.ArrowEnding.None },
-        { 'X', SequenceDiagrams.ArrowEnding.Cross },
-        { ')', SequenceDiagrams.ArrowEnding.Open }
-    };
 
     private static bool ArrowEnding(SequenceContext context, Message msg)
     {
         var peek = context.Parser.Peek();
-        
+
+        if (!peek.HasValue)
+        {
+            return false;
+        }
+
+        if (peek.Value == MessageChar)
+        {
+            msg.Line = ArrowLine.Dotted;
+            context.Parser.Next();
+            peek = context.Parser.Peek();
+        }
+
         if (peek.HasValue && Endings.ContainsKey(peek.Value))
         {
             context.Parser.Next();
@@ -108,7 +117,7 @@ public class SequenceDiagramInterpreter
 
     private static Message ParseMessage(SequenceContext context)
     {
-        if (context.Parser.Current != '-')
+        if (context.Parser.Current != MessageChar)
         {
             return null;
         }
@@ -136,31 +145,40 @@ public class SequenceDiagramInterpreter
             return false;
         }
 
-        var participantNext = context.Parser.NextWord();
-        if (participantNext == null)
+        if (context.Parser.Current == MessageChar)
         {
             return false;
         }
 
+        var identifier = context.Parser.NextWord();
+        while (!context.Parser.EndOfLine)
+        {
+            var next = context.Parser.NextWord();
+            if (next == "as")
+            {
+                if (!context.Parser.EndOfLine)
+                {
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(next))
+            {
+                context.Diagram.Participants.Add(identifier, identifier);
+                return true;
+            }
+
+            identifier += " ";
+            identifier += next;
+        }
+
         if (context.Parser.EndOfLine)
         {
-            context.Diagram.Participants.Add(participantNext, participantNext);
+            context.Diagram.Participants.Add(identifier, identifier);
             return true;
         }
 
-        var asWord = context.Parser.NextWord();
-        if (asWord != "as")
-        {
-            throw new InvalidDiagramException("Expected 'as' after participant id", context.Parser.LineNumber);
-        }
-
-        var alias = context.Parser.NextWord();
-        if (alias == null)
-        {
-            throw new InvalidDiagramException("Expected alias after 'as'", context.Parser.LineNumber);
-        }
-
-        context.Diagram.Participants.Add(participantNext, alias);
+        context.Diagram.Participants.Add(identifier, context.Parser.CurrentLine[context.Parser.CurrentPosition..].Trim());
         return true;
     }
 }
