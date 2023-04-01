@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mermaid.NetStandard.SequenceDiagrams;
+﻿using Mermaid.NetStandard.SequenceDiagrams;
 
 namespace Mermaid.NetStandard.Tests
 {
@@ -39,27 +34,6 @@ participant
         }
 
         [Fact]
-        public async Task ParticipantsMustBeAtLeastOneWord()
-        {
-            var src = @"sequenceDiagram
-participant as as as";
-            var diagram = await src.IsDiagramType<SequenceDiagram>();
-            var pc = Assert.Single(diagram.Participants);
-            Assert.Equal("as", pc.Key);
-        }
-
-        [Fact]
-        public async Task ExplicitParticipantsCanBeMoreThanOneWord()
-        {
-            var src = @"sequenceDiagram
-participant as as as as";
-            var diagram = await src.IsDiagramType<SequenceDiagram>();
-            var pc = Assert.Single(diagram.Participants);
-            Assert.Equal("as", pc.Key);
-            Assert.Equal("as as", pc.Value);
-        }
-
-        [Fact]
         public async Task ExplicitParticipantRequiresSpace()
         {
             var src = @"sequenceDiagram
@@ -68,44 +42,22 @@ participant->BC";
             Assert.Equal("participant",diagram.Participants.First().Key);
         }
 
-        [Fact]
-        public async Task AddsExplicitParticipant()
+        [Theory]
+        [InlineData("participant BC Thingy", "BC Thingy", "BC Thingy")]
+        [InlineData("participant BC", "BC", "BC")]
+        [InlineData("participant BC as", "BC as", "BC as")]
+        [InlineData("participant A as B", "A", "B")]
+        [InlineData("participant as as as", "as", "as")]
+        [InlineData("participant as as as as", "as", "as as")]
+        [InlineData("participant thing one as thing two", "thing one", "thing two")]
+        public async Task ParseParticipant(string line, string id, string label)
         {
-            var src = @"sequenceDiagram
-participant BC";
+            var src = @$"sequenceDiagram
+{line}";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
-            var participant = diagram.Participants.Single();
-            Assert.Equal("BC", participant.Key);
-            Assert.Equal("BC", participant.Value);
-        }
-
-        [Fact]
-        public async Task NoAsAfterParticipantName()
-        {
-            var src = @"sequenceDiagram
-participant BC alias";
-            var diagram = await src.IsDiagramType<SequenceDiagram>();
-            Assert.Equal("BC alias",diagram.Participants.First().Key);
-        }
-
-        [Fact]
-        public async Task NoAliasAfterAsParticipantAs()
-        {
-            var src = @"sequenceDiagram
-participant BC as ";
-            var diagram = await src.IsDiagramType<SequenceDiagram>();
-            Assert.Equal("BC as", diagram.Participants.First().Key);
-        }
-
-        [Fact]
-        public async Task AddsExplicitParticipantAlias()
-        {
-            var src = @"sequenceDiagram
-participant BC as Background";
-            var diagram = await src.IsDiagramType<SequenceDiagram>();
-            var participant = diagram.Participants.Single();
-            Assert.Equal("BC", participant.Key);
-            Assert.Equal("Background", participant.Value);
+            var part = Assert.Single(diagram.Participants);
+            Assert.Equal(id,part.Key);
+            Assert.Equal(label,part.Value);
         }
 
         [Theory]
