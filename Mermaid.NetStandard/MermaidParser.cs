@@ -127,5 +127,10 @@ namespace Mermaid.NetStandard
 
             return await DiagramTypes[parser.CurrentLine](parser);
         }
+
+        public string RestOfLine()
+        {
+            return CurrentLine[CurrentPosition..].Trim();
+        }
     }
 }

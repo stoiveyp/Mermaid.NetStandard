@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Mermaid.NetStandard.SequenceDiagrams;
@@ -10,6 +11,11 @@ public class SequenceDiagramInterpreter
     {
         var sequenceContext = new SequenceContext(parser);
         await Interpret(sequenceContext);
+        var openContainer = sequenceContext.CurrentContainer;
+        if (openContainer != null)
+        {
+            throw new InvalidDiagramException($"{openContainer.GetType().Name} without end");
+        }
         return sequenceContext.Diagram;
     }
 
@@ -17,17 +23,20 @@ public class SequenceDiagramInterpreter
     {
         { "autonumber", sc =>sc.Diagram.AutoNumber = true },
         { "participant", Participant.Parse },
-        { "box" , Box.Parse}
+        { "box", Box.Parse },
+        { "end", sc => sc.EndContainer() }
     };
 
     private static async Task Interpret(SequenceContext context)
     {
-        if (!await context.Parser.NextInterpeterLine())
+        while (await context.Parser.NextInterpeterLine())
         {
-            return;
+            await InterpretLine(context);
         }
+    }
 
-
+    private static async Task InterpretLine(SequenceContext context)
+    {
         var commandOrActor = context.Parser.NextWord();
         if (commandOrActor == null)
         {

@@ -81,7 +81,7 @@ namespace Mermaid.NetStandard.SequenceDiagrams
 
             context.Parser.Next();
 
-            context.Diagram.Messages.Add(msg);
+            context.AddMessage(msg);
             return msg;
         }
     }

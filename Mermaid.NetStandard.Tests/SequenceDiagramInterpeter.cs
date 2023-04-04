@@ -29,8 +29,7 @@ autoNumber
 sequenceDiagram
 participant
 -->";
-            var diagram = await src.IsDiagramType<SequenceDiagram>();
-            Assert.Equal("participant", Assert.Single(diagram.Participants).Key);
+            src.IsInvalidDiagram<InvalidDiagramException>("No actor found");
         }
 
         [Fact]
@@ -39,7 +38,7 @@ participant
             var src = @"sequenceDiagram
 participant->BC";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
-            Assert.Equal("participant",diagram.Participants.First().Key);
+            Assert.Equal("participant", diagram.Participants.First().Key);
         }
 
         [Theory]
@@ -56,8 +55,8 @@ participant->BC";
 {line}";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
             var part = Assert.Single(diagram.Participants);
-            Assert.Equal(id,part.Key);
-            Assert.Equal(label,part.Value);
+            Assert.Equal(id, part.Key);
+            Assert.Equal(label, part.Value);
         }
 
         [Theory]
@@ -83,6 +82,24 @@ participant->BC";
             Assert.Equal(line, msg.Line);
             Assert.Equal(originator, msg.Originator);
             Assert.Equal(recipient, msg.Recipient);
+        }
+
+        [Fact]
+        public async Task BoxParsingRequiresEnd()
+        {
+            var src = @"sequenceDiagram
+box transparent test box";
+            await src.IsInvalidDiagram<InvalidDiagramException>("Box without end");
+        }
+
+        [Fact]
+        public async Task ValidBoxAppearsInDiagram()
+        {
+            var src = @"sequenceDiagram
+box transparent test box
+end";
+            var drg = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Single(drg.Containers);
         }
     }
 }

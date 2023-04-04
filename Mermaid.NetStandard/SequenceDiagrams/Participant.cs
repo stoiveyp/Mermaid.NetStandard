@@ -57,7 +57,7 @@ namespace Mermaid.NetStandard.SequenceDiagrams
                 return true;
             }
 
-            context.Diagram.Participants.Add(identifier, context.Parser.CurrentLine[context.Parser.CurrentPosition..].Trim());
+            context.Diagram.Participants.Add(identifier, context.Parser.RestOfLine());
             return true;
         }
     }
