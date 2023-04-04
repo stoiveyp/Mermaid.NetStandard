@@ -1,4 +1,5 @@
-﻿using Mermaid.NetStandard.SequenceDiagrams;
+﻿using System.Drawing;
+using Mermaid.NetStandard.SequenceDiagrams;
 
 namespace Mermaid.NetStandard.Tests
 {
@@ -93,13 +94,35 @@ box transparent test box";
         }
 
         [Fact]
-        public async Task ValidBoxAppearsInDiagram()
+        public async Task BoxMessagesAreAttachedToBox()
         {
             var src = @"sequenceDiagram
 box transparent test box
+A-->>B
 end";
             var drg = await src.IsDiagramType<SequenceDiagram>();
-            Assert.Single(drg.Containers);
+            var box = Assert.IsType<Box>(drg.Containers.First());
+            var msg = Assert.Single(box.Messages);
+            AssertMessage(msg, "A", ArrowEnding.Arrowhead, ArrowLine.Dotted, "B");
+        }
+
+        public static IEnumerable<object[]> BoxData => new List<object[]>
+        {
+            new object[] { "transparent label", Color.Transparent, "label" }
+        };
+
+        [Theory]
+        [MemberData(nameof(BoxData))]
+        public async Task ValidBoxAppearsInDiagram(string boxText, Color color, string label)
+        {
+            var src = $@"sequenceDiagram
+box {boxText}
+end";
+            var drg = await src.IsDiagramType<SequenceDiagram>();
+            var container = Assert.Single(drg.Containers);
+            var box = Assert.IsType<Box>(container);
+            Assert.Equal(color, box.Color);
+            Assert.Equal(label, box.Label);
         }
     }
 }
