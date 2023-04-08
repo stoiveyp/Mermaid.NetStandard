@@ -30,7 +30,7 @@ autoNumber
 sequenceDiagram
 participant
 -->";
-            src.IsInvalidDiagram<InvalidDiagramException>("No actor found");
+            await src.IsInvalidDiagram<InvalidDiagramException>("No actor found");
         }
 
         [Fact]

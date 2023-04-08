@@ -8,6 +8,7 @@
     <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
