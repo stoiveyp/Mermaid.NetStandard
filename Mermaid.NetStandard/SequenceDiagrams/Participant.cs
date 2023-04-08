@@ -6,7 +6,22 @@ namespace Mermaid.NetStandard.SequenceDiagrams
 {
     public class Participant
     {
-        public static string Next(SequenceContext context, bool asBreaks = false)
+        public string Name { get; }
+        public string Alias { get; }
+        public ParticipantType Type { get; }
+
+        public Participant(string name):this(name, name)
+        {
+        }
+
+        public Participant(string alias, string name, ParticipantType type = ParticipantType.Participant)
+        {
+            Name = name;
+            Alias = alias;
+            Type = type;
+        }
+
+        public static string? Next(SequenceContext context, bool asBreaks = false)
         {
             if (Message.IsStart(context.Parser.Current))
             {
@@ -37,7 +52,7 @@ namespace Mermaid.NetStandard.SequenceDiagrams
             return identifier;
         }
 
-        public static bool Parse(SequenceContext context)
+        public static bool Parse(SequenceContext context, ParticipantType type)
         {
             if (context.Parser.EndOfLine)
             {
@@ -51,13 +66,18 @@ namespace Mermaid.NetStandard.SequenceDiagrams
 
             var identifier = Next(context, true);
 
+            if (identifier == null)
+            {
+                return false;
+            }
+
             if (context.Parser.EndOfLine)
             {
-                context.Diagram.Participants.Add(identifier, identifier);
+                context.Diagram.Participants.Add(identifier, new Participant(identifier, identifier, type));
                 return true;
             }
 
-            context.Diagram.Participants.Add(identifier, context.Parser.RestOfLine());
+            context.Diagram.Participants.Add(identifier,new Participant(identifier, context.Parser.RestOfLine(), type));
             return true;
         }
     }

@@ -14,7 +14,7 @@ public class SequenceContext
 
     public SequenceDiagram Diagram { get; set; }
     public MermaidParser Parser { get; set; }
-    public string CurrentActor { get; set; }
+    public Participant? CurrentActor { get; set; }
     public Stack<MessageContainer> Containers { get; set; } = new();
     public MessageContainer? CurrentContainer => Containers.Count > 0 ? Containers.Peek() : null;
 

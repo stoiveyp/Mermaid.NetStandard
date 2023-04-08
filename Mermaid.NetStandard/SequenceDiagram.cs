@@ -9,7 +9,7 @@ namespace Mermaid.NetStandard
         public const string MermaidType = "sequenceDiagram";
         public override string Type => MermaidType;
         public bool AutoNumber { get; set; }
-        public Dictionary<string, string> Participants { get; } = new();
+        public Dictionary<string, Participant> Participants { get; } = new();
         public List<Message> Messages { get; set; } = new();
         public List<MessageContainer> Containers { get; } = new();
     }

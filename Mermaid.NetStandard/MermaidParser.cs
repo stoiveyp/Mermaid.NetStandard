@@ -49,7 +49,7 @@ namespace Mermaid.NetStandard
             return false;
         }
 
-        public string NextWord()
+        public string? NextWord()
         {
             if (EndOfLine)
             {

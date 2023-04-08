@@ -19,10 +19,11 @@ public class SequenceDiagramInterpreter
         return sequenceContext.Diagram;
     }
 
-    private static Dictionary<string, Func<SequenceContext, bool>> commands = new(StringComparer.InvariantCultureIgnoreCase)
+    private static readonly Dictionary<string, Func<SequenceContext, bool>> Commands = new(StringComparer.InvariantCultureIgnoreCase)
     {
         { "autonumber", sc =>sc.Diagram.AutoNumber = true },
-        { "participant", Participant.Parse },
+        { "participant", sc => Participant.Parse(sc,ParticipantType.Participant) },
+        { "actor", sc => Participant.Parse(sc, ParticipantType.Actor) },
         { "box", Box.Parse },
         { "end", sc => sc.EndContainer() }
     };
@@ -31,26 +32,21 @@ public class SequenceDiagramInterpreter
     {
         while (await context.Parser.NextInterpeterLine())
         {
-            await InterpretLine(context);
+            InterpretLine(context);
         }
     }
 
-    private static async Task InterpretLine(SequenceContext context)
+    private static void InterpretLine(SequenceContext context)
     {
-        var commandOrActor = context.Parser.NextWord();
-        if (commandOrActor == null)
+        var commandOrActor = context.Parser.NextWord() ?? throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
+        if (Commands.ContainsKey(commandOrActor))
         {
-            throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
-        }
-
-        if (commands.ContainsKey(commandOrActor))
-        {
-            if (commands[commandOrActor](context)) return;
+            if (Commands[commandOrActor](context)) return;
         }
 
         if (context.Parser.EndOfLine)
         {
-            context.Diagram.Participants.Add(commandOrActor, commandOrActor);
+            context.Diagram.Participants.Add(commandOrActor, new Participant(commandOrActor));
             return;
         }
 
@@ -63,22 +59,17 @@ public class SequenceDiagramInterpreter
 
         if (!context.Diagram.Participants.ContainsKey(commandOrActor))
         {
-            context.Diagram.Participants.Add(commandOrActor, commandOrActor);
+            context.Diagram.Participants.Add(commandOrActor, new Participant(commandOrActor));
         }
 
-        context.CurrentActor = commandOrActor;
+        context.CurrentActor = context.Diagram.Participants[commandOrActor];
 
         if (context.Parser.EndOfLine)
         {
             return;
         }
 
-        var message = Message.Parse(context);
-        if (message == null)
-        {
-            throw new InvalidDiagramException("Unknown message type", context.Parser.LineNumber);
-        }
-
+        var message = Message.Parse(context) ?? throw new InvalidDiagramException("Unknown message type", context.Parser.LineNumber);
         var recipient = Participant.Next(context);
 
         if (recipient == null)
@@ -88,9 +79,9 @@ public class SequenceDiagramInterpreter
 
         if (!context.Diagram.Participants.ContainsKey(recipient))
         {
-            context.Diagram.Participants.Add(recipient, recipient);
+            context.Diagram.Participants.Add(recipient, new Participant(recipient));
         }
 
-        message.Recipient = recipient;
+        message.Recipient = context.Diagram.Participants[recipient];
     }
 }

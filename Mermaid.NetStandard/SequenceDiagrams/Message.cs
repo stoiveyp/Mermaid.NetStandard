@@ -8,12 +8,12 @@ namespace Mermaid.NetStandard.SequenceDiagrams
     {
         private const char Char = '-';
 
-        public string Originator { get; set; }
-        public string Recipient { get; set; }
+        public Participant? Originator { get; set; }
+        public Participant? Recipient { get; set; }
         public ArrowEnding Ending { get; set; }
         public ArrowLine Line { get; set; }
 
-        private static Dictionary<char, ArrowEnding> Endings = new()
+        private static readonly Dictionary<char, ArrowEnding> Endings = new()
         {
             { '>', ArrowEnding.None },
             { 'X', ArrowEnding.Cross },
@@ -62,9 +62,9 @@ namespace Mermaid.NetStandard.SequenceDiagrams
             return true;
         }
 
-        public static Message Parse(SequenceContext context)
+        public static Message? Parse(SequenceContext context)
         {
-            if (context.Parser.Current != Char)
+            if (context.Parser.Current != Char || context.CurrentActor == null)
             {
                 return null;
             }

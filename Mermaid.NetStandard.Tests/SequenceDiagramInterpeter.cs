@@ -47,17 +47,20 @@ participant->BC";
         [InlineData("participant BC", "BC", "BC")]
         [InlineData("participant BC as", "BC as", "BC as")]
         [InlineData("participant A as B", "A", "B")]
-        [InlineData("participant as as as", "as", "as")]
+        [InlineData("actor as as as", "as", "as", ParticipantType.Actor)]
+        [InlineData("participant as as as", "as", "as", ParticipantType.Participant)]
         [InlineData("participant as as as as", "as", "as as")]
         [InlineData("participant thing one as thing two", "thing one", "thing two")]
-        public async Task ParseParticipant(string line, string id, string label)
+        [InlineData("actor thing one as thing two", "thing one", "thing two", ParticipantType.Actor)]
+        public async Task ParseParticipant(string line, string id, string label, ParticipantType type = ParticipantType.Participant)
         {
             var src = @$"sequenceDiagram
 {line}";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
             var part = Assert.Single(diagram.Participants);
             Assert.Equal(id, part.Key);
-            Assert.Equal(label, part.Value);
+            Assert.Equal(label, part.Value.Name);
+            Assert.Equal(type, part.Value.Type);
         }
 
         [Theory]
@@ -81,8 +84,8 @@ participant->BC";
         {
             Assert.Equal(ending, msg.Ending);
             Assert.Equal(line, msg.Line);
-            Assert.Equal(originator, msg.Originator);
-            Assert.Equal(recipient, msg.Recipient);
+            Assert.Equal(originator, msg.Originator!.Name);
+            Assert.Equal(recipient, msg.Recipient!.Name);
         }
 
         [Fact]
@@ -106,10 +109,10 @@ end";
             AssertMessage(msg, "A", ArrowEnding.Arrowhead, ArrowLine.Dotted, "B");
         }
 
-        public static IEnumerable<object[]> BoxData => new List<object[]>
+        public static IEnumerable<object?[]> BoxData => new List<object?[]>
         {
-            new object[] { string.Empty, Color.Transparent, null },
-            new object[] { "transparent label", Color.Transparent, "label" },
+            new object?[] { string.Empty, Color.Transparent, null },
+            new object?[] { "transparent label", Color.Transparent, "label" },
             new object[] { "purple green", Color.Purple, "green" },
             new object[] { "AntiqueWHite stuffy thing", Color.AntiqueWhite, "stuffy thing" },
             new object[] { "totally not green", Color.Transparent, "totally not green" },
