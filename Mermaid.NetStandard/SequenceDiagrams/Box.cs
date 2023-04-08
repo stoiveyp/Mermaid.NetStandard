@@ -7,21 +7,31 @@ namespace Mermaid.NetStandard.SequenceDiagrams
 {
     public class Box:MessageContainer
     {
-        public Color Color { get; set; }
-        public string Label { get; set; }
+        public Color Color { get; set; } = Color.Transparent;
+        public string? Label { get; set; }
 
         public static bool Parse(SequenceContext context)
         {
             var box = new Box();
             context.Containers.Push(box);
-            return true;
 
-            if (context.Parser.EndOfLine)
+            var colorWord = context.Parser.NextWord();
+
+            if(colorWord == null)
             {
-                return false;
+                return true;
             }
 
-            return false;
+            if (Enum.TryParse(typeof(KnownColor), colorWord, true, out object validWord))
+            {
+                box.Color = System.Drawing.Color.FromKnownColor((KnownColor)validWord);
+                box.Label = context.Parser.RestOfLine();
+            }
+            else{
+                box.Label = colorWord + " " + context.Parser.RestOfLine();
+            }
+
+            return true;
         }
     }
 }
