@@ -108,12 +108,16 @@ end";
 
         public static IEnumerable<object[]> BoxData => new List<object[]>
         {
-            new object[] { "transparent label", Color.Transparent, "label" }
+            new object[] { string.Empty, Color.Transparent, null },
+            new object[] { "transparent label", Color.Transparent, "label" },
+            new object[] { "purple green", Color.Purple, "green" },
+            new object[] { "AntiqueWHite stuffy thing", Color.AntiqueWhite, "stuffy thing" },
+            new object[] { "totally not green", Color.Transparent, "totally not green" },
         };
 
         [Theory]
         [MemberData(nameof(BoxData))]
-        public async Task ValidBoxAppearsInDiagram(string boxText, Color color, string label)
+        public async Task ValidBoxAppearsInDiagram(string boxText, Color color, string? label)
         {
             var src = $@"sequenceDiagram
 box {boxText}

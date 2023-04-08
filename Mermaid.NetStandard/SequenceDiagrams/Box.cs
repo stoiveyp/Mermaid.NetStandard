@@ -22,9 +22,9 @@ namespace Mermaid.NetStandard.SequenceDiagrams
                 return true;
             }
 
-            if(Enum.IsDefined(typeof(KnownColor), colorWord))
+            if (Enum.TryParse(typeof(KnownColor), colorWord, true, out object validWord))
             {
-                box.Color = Color.FromKnownColor(Enum.Parse<KnownColor>(colorWord, true));
+                box.Color = System.Drawing.Color.FromKnownColor((KnownColor)validWord);
                 box.Label = context.Parser.RestOfLine();
             }
             else{
