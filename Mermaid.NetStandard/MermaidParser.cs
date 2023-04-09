@@ -132,5 +132,10 @@ namespace Mermaid.NetStandard
         {
             return CurrentLine[CurrentPosition..].Trim();
         }
+
+        public void MoveForward(int number)
+        {
+            CurrentPosition += number;
+        }
     }
 }

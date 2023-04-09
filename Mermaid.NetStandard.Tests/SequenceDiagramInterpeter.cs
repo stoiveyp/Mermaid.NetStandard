@@ -116,6 +116,7 @@ end";
             new object[] { "purple green", Color.Purple, "green" },
             new object[] { "AntiqueWHite stuffy thing", Color.AntiqueWhite, "stuffy thing" },
             new object[] { "totally not green", Color.Transparent, "totally not green" },
+            new object[] { "rgb(50,60,70) not green", Color.FromArgb(50,60,70), "not green" },
         };
 
         [Theory]

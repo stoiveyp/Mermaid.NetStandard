@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Mermaid.NetStandard.SequenceDiagrams
 {
@@ -9,6 +8,8 @@ namespace Mermaid.NetStandard.SequenceDiagrams
     {
         public Color Color { get; set; } = Color.Transparent;
         public string? Label { get; set; }
+
+        private static Regex RgbFunction = new (@"^\((\s?(?<ref>\d{1,3})\s?,?){3}\)", RegexOptions.Compiled);
 
         public static bool Parse(SequenceContext context)
         {
@@ -20,6 +21,22 @@ namespace Mermaid.NetStandard.SequenceDiagrams
             if(colorWord == null)
             {
                 return true;
+            }
+
+            if (colorWord.Equals("rgb", StringComparison.InvariantCultureIgnoreCase))
+            {
+                var match = RgbFunction.Match(context.Parser.RestOfLine());
+                if (match.Success)
+                {
+                    var pieces = match.Groups["ref"].Captures;
+                    var r = int.Parse(pieces[0].Value);
+                    var g = int.Parse(pieces[1].Value);
+                    var b = int.Parse(pieces[2].Value);
+                    box.Color = System.Drawing.Color.FromArgb(r, g, b);
+                    context.Parser.MoveForward(match.Length);
+                    box.Label = context.Parser.RestOfLine();
+                    return true;
+                }
             }
 
             if (Enum.TryParse(typeof(KnownColor), colorWord, true, out object validWord))
