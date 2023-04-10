@@ -46,7 +46,7 @@ public class SequenceDiagramInterpreter
 
         if (context.Parser.EndOfLine)
         {
-            context.Diagram.Participants.Add(commandOrActor, new Participant(commandOrActor));
+            context.EnsureParticipant(commandOrActor, commandOrActor);
             return;
         }
 
@@ -57,12 +57,7 @@ public class SequenceDiagramInterpreter
             commandOrActor += restOfCommand;
         }
 
-        if (!context.Diagram.Participants.ContainsKey(commandOrActor))
-        {
-            context.Diagram.Participants.Add(commandOrActor, new Participant(commandOrActor));
-        }
-
-        context.CurrentActor = context.Diagram.Participants[commandOrActor];
+        context.CurrentActor = context.EnsureParticipant(commandOrActor, commandOrActor);
 
         if (context.Parser.EndOfLine)
         {
@@ -70,6 +65,8 @@ public class SequenceDiagramInterpreter
         }
 
         var message = Message.Parse(context) ?? throw new InvalidDiagramException("Unknown message type", context.Parser.LineNumber);
+        var activationType = Activation.ParseShortcut(context);
+
         var recipient = Participant.Next(context);
 
         if (recipient == null)
@@ -77,11 +74,18 @@ public class SequenceDiagramInterpreter
             return;
         }
 
-        if (!context.Diagram.Participants.ContainsKey(recipient))
+        message.Recipient =  context.EnsureParticipant(recipient, recipient);
+
+        if (activationType == ActivationType.Activate)
         {
-            context.Diagram.Participants.Add(recipient, new Participant(recipient));
+            context.AddElement(new Activation(activationType.Value,message.Recipient!));
         }
 
-        message.Recipient = context.Diagram.Participants[recipient];
+        context.AddElement(message);
+
+        if (activationType == ActivationType.Deactivate)
+        {
+            context.AddElement(new Activation(activationType.Value, message.Originator!));
+        }
     }
 }

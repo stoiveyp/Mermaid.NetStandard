@@ -15,35 +15,40 @@ public class SequenceContext
     public SequenceDiagram Diagram { get; set; }
     public MermaidParser Parser { get; set; }
     public Participant? CurrentActor { get; set; }
-    public Stack<MessageContainer> Containers { get; set; } = new();
-    public MessageContainer? CurrentContainer => Containers.Count > 0 ? Containers.Peek() : null;
+    public Stack<SequenceContainer> Containers { get; set; } = new();
+    public SequenceContainer? CurrentContainer => Containers.Count > 0 ? Containers.Peek() : null;
 
-    public void AddMessage(Message message)
+    public void AddElement(SequenceElement element)
     {
         if (CurrentContainer != null)
         {
-            CurrentContainer.Messages.Add(message);
+            CurrentContainer.Elements.Add(element);
 
         }
         else
         {
-            Diagram.Messages.Add(message);
+            Diagram.Elements.Add(element);
         }
     }
-
+    
     public bool EndContainer()
     {
         if (Containers.Any())
         {
-            Diagram.Containers.Add(Containers.Pop());
+            Diagram.Elements.Add(Containers.Pop());
             return true;
         }
 
         return false;
     }
-}
 
-public abstract class MessageContainer
-{
-    public List<Message> Messages { get; set; } = new();
+    public Participant EnsureParticipant(string name, string alias, ParticipantType type = ParticipantType.Participant)
+    {
+        if (!Diagram.Participants.ContainsKey(name))
+        {
+            Diagram.Participants.Add(name, new Participant(name, alias, type));
+        }
+
+        return Diagram.Participants[name];
+    }
 }

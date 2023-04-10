@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Mermaid.NetStandard.SequenceDiagrams
 {
-    public class Box:MessageContainer
+    public class Box:SequenceContainer
     {
         public Color Color { get; set; } = Color.Transparent;
         public string? Label { get; set; }

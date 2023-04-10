@@ -14,7 +14,7 @@ namespace Mermaid.NetStandard.SequenceDiagrams
         {
         }
 
-        public Participant(string alias, string name, ParticipantType type = ParticipantType.Participant)
+        public Participant(string name, string alias, ParticipantType type = ParticipantType.Participant)
         {
             Name = name;
             Alias = alias;
@@ -73,11 +73,11 @@ namespace Mermaid.NetStandard.SequenceDiagrams
 
             if (context.Parser.EndOfLine)
             {
-                context.Diagram.Participants.Add(identifier, new Participant(identifier, identifier, type));
+                context.EnsureParticipant(identifier, identifier, type);
                 return true;
             }
 
-            context.Diagram.Participants.Add(identifier,new Participant(identifier, context.Parser.RestOfLine(), type));
+            context.EnsureParticipant(identifier,context.Parser.RestOfLine(), type);
             return true;
         }
     }

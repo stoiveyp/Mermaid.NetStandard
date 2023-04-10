@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mermaid.NetStandard.SequenceDiagrams
 {
-    public class Message
+    public class Message:SequenceElement
     {
         private const char Char = '-';
 
@@ -80,8 +80,6 @@ namespace Mermaid.NetStandard.SequenceDiagrams
             }
 
             context.Parser.Next();
-
-            context.AddMessage(msg);
             return msg;
         }
     }

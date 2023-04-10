@@ -52,14 +52,15 @@ participant->BC";
         [InlineData("participant as as as as", "as", "as as")]
         [InlineData("participant thing one as thing two", "thing one", "thing two")]
         [InlineData("actor thing one as thing two", "thing one", "thing two", ParticipantType.Actor)]
-        public async Task ParseParticipant(string line, string id, string label, ParticipantType type = ParticipantType.Participant)
+        public async Task ParseParticipant(string line, string id, string alias, ParticipantType type = ParticipantType.Participant)
         {
             var src = @$"sequenceDiagram
 {line}";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
             var part = Assert.Single(diagram.Participants);
             Assert.Equal(id, part.Key);
-            Assert.Equal(label, part.Value.Name);
+            Assert.Equal(id, part.Value.Name);
+            Assert.Equal(alias, part.Value.Alias);
             Assert.Equal(type, part.Value.Type);
         }
 
@@ -76,7 +77,7 @@ participant->BC";
 {message}";
             var diagram = await src.IsDiagramType<SequenceDiagram>();
             Assert.Equal(2, diagram.Participants.Count);
-            var msg = Assert.Single(diagram.Messages);
+            var msg = Assert.IsType<Message>(Assert.Single(diagram.Elements));
             AssertMessage(msg, originator, ending, line, recipient);
         }
 
@@ -104,8 +105,8 @@ box transparent test box
 A-->>B
 end";
             var drg = await src.IsDiagramType<SequenceDiagram>();
-            var box = Assert.IsType<Box>(drg.Containers.First());
-            var msg = Assert.Single(box.Messages);
+            var box = Assert.IsType<Box>(drg.Elements.First());
+            var msg = Assert.IsType<Message>(Assert.Single(box.Elements));
             AssertMessage(msg, "A", ArrowEnding.Arrowhead, ArrowLine.Dotted, "B");
         }
 
@@ -127,10 +128,60 @@ end";
 box {boxText}
 end";
             var drg = await src.IsDiagramType<SequenceDiagram>();
-            var container = Assert.Single(drg.Containers);
+            var container = Assert.Single(drg.Elements);
             var box = Assert.IsType<Box>(container);
             Assert.Equal(color, box.Color);
             Assert.Equal(label, box.Label);
+        }
+
+        [Fact]
+        public async Task ActivationShortcut()
+        {
+            var src = @"sequenceDiagram
+A-->>+B";
+            var drg = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal(2,drg.Participants.Count);
+            var act = Assert.IsType<Activation>(drg.Elements.First());
+            Assert.Equal(ActivationType.Activate, act.Type);
+            Assert.Equal(drg.Participants["B"],act.Participant);
+        }
+
+        [Fact]
+        public async Task DeactivationShortcut()
+        {
+            var src = @"sequenceDiagram
+A-->>-B";
+            var drg = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal(2, drg.Participants.Count);
+            var act = Assert.IsType<Activation>(drg.Elements.Skip(1).First());
+            Assert.Equal(ActivationType.Deactivate, act.Type);
+            Assert.Equal(drg.Participants["A"], act.Participant);
+        }
+
+        [Fact]
+        public async Task ActivationCommandExplicitParticipant()
+        {
+            var src = @"sequenceDiagram
+participant A
+activate A";
+            var drg = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal(2, drg.Participants.Count);
+            var act = Assert.IsType<Activation>(Assert.Single(drg.Elements));
+            Assert.Equal(ActivationType.Activate, act.Type);
+            Assert.Equal(drg.Participants["A"], act.Participant);
+        }
+
+        [Fact]
+        public async Task ActivationCommandImplicitParticipant()
+        {
+            var src = @"sequenceDiagram
+participant A
+deactivate A";
+            var drg = await src.IsDiagramType<SequenceDiagram>();
+            Assert.Equal(2, drg.Participants.Count);
+            var act = Assert.IsType<Activation>(Assert.Single(drg.Elements));
+            Assert.Equal(ActivationType.Deactivate, act.Type);
+            Assert.Equal(drg.Participants["A"], act.Participant);
         }
     }
 }

@@ -10,7 +10,6 @@ namespace Mermaid.NetStandard
         public override string Type => MermaidType;
         public bool AutoNumber { get; set; }
         public Dictionary<string, Participant> Participants { get; } = new();
-        public List<Message> Messages { get; set; } = new();
-        public List<MessageContainer> Containers { get; } = new();
+        public List<SequenceElement> Elements { get; set; } = new();
     }
 }
