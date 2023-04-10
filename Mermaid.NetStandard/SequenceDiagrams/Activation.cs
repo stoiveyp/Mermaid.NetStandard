@@ -15,11 +15,12 @@ namespace Mermaid.NetStandard.SequenceDiagrams
             Participant = participant;
         }
 
-        public static Activation Parse(SequenceContext context, ActivationType type)
+        public static bool Parse(SequenceContext context, ActivationType type)
         {
             var key = context.Parser.RestOfLine().Trim();
             var participant = context.EnsureParticipant(key, key);
-            return new Activation(type, participant);
+            context.AddElement(new Activation(type, participant));
+            return true;
         }
 
 

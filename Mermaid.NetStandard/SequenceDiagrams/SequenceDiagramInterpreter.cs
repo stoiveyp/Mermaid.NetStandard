@@ -25,7 +25,9 @@ public class SequenceDiagramInterpreter
         { "participant", sc => Participant.Parse(sc,ParticipantType.Participant) },
         { "actor", sc => Participant.Parse(sc, ParticipantType.Actor) },
         { "box", Box.Parse },
-        { "end", sc => sc.EndContainer() }
+        { "end", sc => sc.EndContainer() },
+        { "activate", sc => Activation.Parse(sc, ActivationType.Activate)},
+        { "deactivate", sc => Activation.Parse(sc, ActivationType.Deactivate)}
     };
 
     private static async Task Interpret(SequenceContext context)
@@ -38,10 +40,15 @@ public class SequenceDiagramInterpreter
 
     private static void InterpretLine(SequenceContext context)
     {
-        var commandOrActor = context.Parser.NextWord() ?? throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
-        if (Commands.ContainsKey(commandOrActor))
+        if (!char.IsLetterOrDigit(context.Parser.Current))
         {
-            if (Commands[commandOrActor](context)) return;
+            return;
+        }
+
+        var commandOrActor = context.Parser.NextWord() ?? throw new InvalidDiagramException("No actor found", context.Parser.LineNumber);
+        if (Commands.TryGetValue(commandOrActor, out var command))
+        {
+            if (command(context)) return;
         }
 
         if (context.Parser.EndOfLine)

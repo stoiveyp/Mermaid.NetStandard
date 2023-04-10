@@ -29,7 +29,8 @@ namespace Mermaid.NetStandard.SequenceDiagrams
             }
 
             var identifier = context.Parser.NextWord();
-            while (!context.Parser.EndOfLine)
+
+            while (!context.Parser.EndOfLine && !Message.IsStart(context.Parser.Current))
             {
                 var next = context.Parser.NextWord();
                 if (asBreaks && next == "as")

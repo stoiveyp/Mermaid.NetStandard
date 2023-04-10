@@ -44,11 +44,12 @@ public class SequenceContext
 
     public Participant EnsureParticipant(string name, string alias, ParticipantType type = ParticipantType.Participant)
     {
-        if (!Diagram.Participants.ContainsKey(name))
+        if (!Diagram.Participants.TryGetValue(name, out Participant participant))
         {
-            Diagram.Participants.Add(name, new Participant(name, alias, type));
+            participant = new Participant(name, alias, type);
+            Diagram.Participants.Add(name, participant);
         }
 
-        return Diagram.Participants[name];
+        return participant;
     }
 }
