@@ -11,7 +11,7 @@ public class SequenceDiagramInterpreter
     {
         var sequenceContext = new SequenceContext(parser);
         await Interpret(sequenceContext);
-        var openContainer = sequenceContext.CurrentContainer;
+        var openContainer = sequenceContext.IsOpen();
         if (openContainer != null)
         {
             throw new InvalidDiagramException($"{openContainer.GetType().Name} without end");

@@ -1,8 +1,8 @@
 ﻿using Mermaid.NetStandard.SequenceDiagrams;
 
-namespace Mermaid.NetStandard.Tests;
+namespace Mermaid.NetStandard.Tests.SequenceDiagrams;
 
-public static class SequenceUtility
+public static class Utility
 {
     public static void AssertMessage(this Message msg, string originator, ArrowEnding ending, ArrowLine line, string recipient)
     {

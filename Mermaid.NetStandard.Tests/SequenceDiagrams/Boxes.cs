@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
 using Mermaid.NetStandard.SequenceDiagrams;
 
-namespace Mermaid.NetStandard.Tests;
+namespace Mermaid.NetStandard.Tests.SequenceDiagrams;
 
-public class SequenceDiagramBoxes
+public class Boxes
 {
     [Fact]
     public async Task BoxParsingRequiresEnd()
@@ -18,12 +18,13 @@ box transparent test box";
     {
         var src = @"sequenceDiagram
 box transparent test box
-A-->>B
+participant A as B
 end";
         var drg = await src.IsDiagramType<SequenceDiagram>();
-        var box = Assert.IsType<Box>(drg.Elements.First());
-        var msg = Assert.IsType<Message>(Assert.Single(box.Elements));
-        msg.AssertMessage("A", ArrowEnding.Arrowhead, ArrowLine.Dotted, "B");
+        Assert.Empty(drg.Elements);
+        var part = Assert.Single(drg.Participants).Value;
+        Assert.Equal(part, drg.Boxes.First().Participants.First());
+        
     }
 
     public static IEnumerable<object?[]> BoxData => new List<object?[]>
@@ -44,7 +45,7 @@ end";
 box {boxText}
 end";
         var drg = await src.IsDiagramType<SequenceDiagram>();
-        var container = Assert.Single(drg.Elements);
+        var container = Assert.Single(drg.Boxes);
         var box = Assert.IsType<Box>(container);
         Assert.Equal(color, box.Color);
         Assert.Equal(label, box.Label);

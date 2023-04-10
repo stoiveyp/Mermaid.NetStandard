@@ -1,6 +1,6 @@
-﻿namespace Mermaid.NetStandard.Tests
+﻿namespace Mermaid.NetStandard.Tests.SequenceDiagrams
 {
-    public class SequenceDiagramInterpeter
+    public class Interpreter
     {
         [Fact]
         public async Task DiagramSupported()

@@ -1,8 +1,8 @@
 ﻿using Mermaid.NetStandard.SequenceDiagrams;
 
-namespace Mermaid.NetStandard.Tests;
+namespace Mermaid.NetStandard.Tests.SequenceDiagrams;
 
-public class SequenceDiagramMessages
+public class Messages
 {
     [Theory]
     [InlineData("A->B", "A", ArrowEnding.None, ArrowLine.Solid, "B")]

@@ -1,8 +1,8 @@
 ﻿using Mermaid.NetStandard.SequenceDiagrams;
 
-namespace Mermaid.NetStandard.Tests;
+namespace Mermaid.NetStandard.Tests.SequenceDiagrams;
 
-public class SequenceDiagramParticipants
+public class Participants
 {
     [Fact]
     public async Task NoParticipantActorGeneratesParticipant()

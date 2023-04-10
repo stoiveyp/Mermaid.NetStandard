@@ -1,8 +1,8 @@
 ﻿using Mermaid.NetStandard.SequenceDiagrams;
 
-namespace Mermaid.NetStandard.Tests;
+namespace Mermaid.NetStandard.Tests.SequenceDiagrams;
 
-public class SequenceDiagramActivation
+public class Activation
 {
     [Fact]
     public async Task ActivationShortcut()
@@ -11,7 +11,7 @@ public class SequenceDiagramActivation
 A-->>+B";
         var drg = await src.IsDiagramType<SequenceDiagram>();
         Assert.Equal(2, drg.Participants.Count);
-        var act = Assert.IsType<Activation>(drg.Elements.First());
+        var act = Assert.IsType<NetStandard.SequenceDiagrams.Activation>(drg.Elements.First());
         Assert.Equal(ActivationType.Activate, act.Type);
         Assert.Equal(drg.Participants["B"], act.Participant);
     }
@@ -23,7 +23,7 @@ A-->>+B";
 A-->>-B";
         var drg = await src.IsDiagramType<SequenceDiagram>();
         Assert.Equal(2, drg.Participants.Count);
-        var act = Assert.IsType<Activation>(drg.Elements.Skip(1).First());
+        var act = Assert.IsType<NetStandard.SequenceDiagrams.Activation>(drg.Elements.Skip(1).First());
         Assert.Equal(ActivationType.Deactivate, act.Type);
         Assert.Equal(drg.Participants["A"], act.Participant);
     }
@@ -36,7 +36,7 @@ participant A
 activate A";
         var drg = await src.IsDiagramType<SequenceDiagram>();
         Assert.Single(drg.Participants);
-        var act = Assert.IsType<Activation>(Assert.Single(drg.Elements));
+        var act = Assert.IsType<NetStandard.SequenceDiagrams.Activation>(Assert.Single(drg.Elements));
         Assert.Equal(ActivationType.Activate, act.Type);
         Assert.Equal(drg.Participants["A"], act.Participant);
     }
@@ -49,7 +49,7 @@ participant A
 deactivate A";
         var drg = await src.IsDiagramType<SequenceDiagram>();
         Assert.Single(drg.Participants);
-        var act = Assert.IsType<Activation>(Assert.Single(drg.Elements));
+        var act = Assert.IsType<NetStandard.SequenceDiagrams.Activation>(Assert.Single(drg.Elements));
         Assert.Equal(ActivationType.Deactivate, act.Type);
         Assert.Equal(drg.Participants["A"], act.Participant);
     }
@@ -62,7 +62,7 @@ deactivate A";
 activate A";
         var drg = await src.IsDiagramType<SequenceDiagram>();
         Assert.Single(drg.Participants);
-        var act = Assert.IsType<Activation>(Assert.Single(drg.Elements));
+        var act = Assert.IsType<NetStandard.SequenceDiagrams.Activation>(Assert.Single(drg.Elements));
         Assert.Equal(ActivationType.Activate, act.Type);
         Assert.Equal(drg.Participants["A"], act.Participant);
     }
@@ -74,7 +74,7 @@ activate A";
 deactivate A";
         var drg = await src.IsDiagramType<SequenceDiagram>();
         Assert.Single(drg.Participants);
-        var act = Assert.IsType<Activation>(Assert.Single(drg.Elements));
+        var act = Assert.IsType<NetStandard.SequenceDiagrams.Activation>(Assert.Single(drg.Elements));
         Assert.Equal(ActivationType.Deactivate, act.Type);
         Assert.Equal(drg.Participants["A"], act.Participant);
     }

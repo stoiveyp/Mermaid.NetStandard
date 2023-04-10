@@ -1,21 +1,24 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Text.RegularExpressions;
 
 namespace Mermaid.NetStandard.SequenceDiagrams
 {
-    public class Box:SequenceContainer
+    public class Box
     {
         public Color Color { get; set; } = Color.Transparent;
         public string? Label { get; set; }
+        public List<Participant> Participants { get; set; } = new();
+
 
         private static Regex RgbFunction = new (@"^\((\s?(?<ref>\d{1,3})\s?,?){3}\)", RegexOptions.Compiled);
 
         public static bool Parse(SequenceContext context)
         {
             var box = new Box();
-            context.Containers.Push(box);
-
+            context.Diagram.Boxes.Add(box);
+            context.CurrentBox = box;
             var colorWord = context.Parser.NextWord();
 
             if(colorWord == null)
